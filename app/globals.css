@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background-color: #131313;
+  color: #e2e2e2;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: #131313;
+  color: #e2e2e2;
+}
+
+.grid-bg {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, #1A1D1F 1px, transparent 1px),
+                    linear-gradient(to bottom, #1A1D1F 1px, transparent 1px);
+  position: relative;
+}
+
+.scanline {
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  position: absolute;
+  animation: scan 8s linear infinite;
+}
+
+@keyframes scan {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 2px;
+  cursor: pointer;
+  background: #353535;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  height: 16px;
+  width: 8px;
+  background: #ffffff;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -7px;
+}
+
+input[type=range]::-moz-range-track {
+  background: #353535;
+  height: 2px;
+}
+
+input[type=range]::-moz-range-thumb {
+  background: #ffffff;
+  height: 16px;
+  width: 8px;
+  border: none;
+  cursor: pointer;
+}
