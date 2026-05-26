@@ -1,117 +1,133 @@
-# SolPerps — On-Chain Perpetuals DEX Implementation Plan
+# SolPerps / Aegis Vault — Implementation Plan
 
-## Section: Setup & Scaffolding
-- Instantiate Anchor project (`anchor init solperps`)
-- Define program IDL structure (`programs/solperps/src/lib.rs`)
-- Define account structs in `programs/solperps/src/state.rs`: `Market`, `TraderAccount`, `Position`, `Order`
-- Setup localnet validator with Pyth mock oracle (`solana-test-validator --account ...`)
-- Configure `Anchor.toml` for localnet and devnet; set provider cluster
+## Status Overview
 
-## Section: Core Data Structures
-- `Market`: `pubkey`, `base_asset`, `quote_asset`, `bids: [Order; 200]`, `asks: [Order; 200]`, `best_bid`, `best_ask`, `open_interest`, `pyth_price_feed`
-- `TraderAccount`: `owner: Pubkey`, `collateral_balance: u64`, `positions: Vec<Position>`
-- `Position`: `market: Pubkey`, `side: Side`, `size: u64`, `entry_price: u64`, `margin_allocated: u64`, `unrealized_pnl: i64`
-- `Order`: `id: u64`, `trader: Pubkey`, `side: Side`, `price: u64`, `size: u64`, `timestamp: i64`
-- Implement serialization/deserialization logic; use `zero_copy` if accounts hit sizing limits (e.g., 10KB)
+| Phase | Name | Status |
+|-------|------|--------|
+| 1 | Core Engine Library | ✅ Complete |
+| 2 | Frontend Data Layer | ✅ Complete |
+| 3 | Trading UI Components | 🔜 Planned |
+| 4 | Solana / Anchor On-Chain Program | 🔜 Planned |
+| 5 | Wallet Integration & Deployment | 🔜 Planned |
 
-## Section: Matching Engine
-- `fn match_order(market: &mut Market, taker_order: &mut Order) -> Vec<Fill>` — returns list of fills
-- Iterate bids/asks from best price; match until order is fully filled or book is exhausted
-- `struct Fill { maker: Pubkey, taker: Pubkey, price: u64, size: u64, fee: u64 }`
-- Apply each fill: update maker's position, update taker's position, deduct margin from both, update open interest on Market
-- Partial fill: reduce `remaining_size` on incoming order; if > 0, insert into book as resting limit
-- Market order: fill at best available price; if book too thin, reject with `InsufficientLiquidity` error
-- Price-time priority: when inserting into sorted array, maintain sort by price descending (bids) / ascending (asks); ties broken by timestamp
-- Fee: `fee = fill_size * fill_price * fee_bps / 10_000`; split: 80% to insurance fund contribution, 20% to protocol (configurable)
-- After all fills: emit `TradeEvent` for each fill, update `market.best_bid` / `market.best_ask`
+---
 
-## Section: Funding Rate & PnL Settlement
+## ✅ Phase 1 — Core Engine Library
 
-### Funding Rate Calculation
-- Implement `funding.rs` with `fn compute_funding_rate(mark: u64, index: u64) -> i64`
-- Formula: `(mark - index) * FUNDING_FACTOR / index`; cap at ±75 bps per hour
+Pure TypeScript business logic. Zero external dependencies. Fully tested via Vitest.
 
-### Funding Application
-- `fn apply_funding(position: &mut Position, funding_rate: i64)`: longs pay when rate > 0, shorts pay when rate < 0
+### Data Types (`lib/engine/types.ts`)
+- `Side`, `OrderType`, `Order`, `Fill`, `Position`, `Market`, `TraderAccount`, `InsuranceFund`
+- Constants: `MAX_FUNDING_RATE_BPS = 75`, `DEFAULT_MAINTENANCE_MARGIN_BPS = 500`
 
-### PnL Settlement
-- Implement `settle_pnl`: calculate diff between exit_price and entry_price, add/subtract from `collateral_balance`
+### Matching Engine (`lib/engine/matching.ts`)
+- `matchOrder(market, takerOrder) → Fill[]` — price-time priority
+- `insertOrderIntoBook` — sorted bids (desc) / asks (asc)
+- `cancelOrder` — removes resting order by ID
+- Partial fills become resting limit orders
+- Market orders throw `InsufficientLiquidity` if book is thin
+- Fee: `size × price × feeBps / 10000`
 
-## Section: Margin & Liquidations
-- `fn required_initial_margin(notional: u64, leverage: u8) -> u64`
-- `fn required_maintenance_margin(notional: u64) -> u64`
-- `fn margin_health(collateral: u64, unrealized_pnl: i64, notional: u64) -> u64` — returns health in bps
-- `fn liquidation_price(entry: u64, side: Side, maintenance_margin_bps: u64, leverage: u8) -> u64`
-- `withdraw_collateral`: check that post-withdrawal health > initial margin; reject if not
-- `place_order`: check trader has enough free margin before inserting order; lock margin
-- `liquidate_position` instruction: Verify health < maintenance margin; if true, close position, penalize collateral, routing penalty to liquidator and insurance fund
+### Margin System (`lib/engine/margin.ts`)
+- `requiredInitialMargin(notional, leverage)` → `notional / leverage`
+- `requiredMaintenanceMargin(notional)` → `notional × 5%`
+- `marginHealth(collateral, pnl, notional)` → health in bps
+- `liquidationPrice(entry, side, maintBps, leverage)` — long/short formulas
+- `canWithdraw` — rejects if withdrawal breaches maintenance margin
+- `isLiquidatable` — health < maintenance margin check
 
-## Section: Insurance Fund
-- Define `InsuranceFund` PDA with USDC token account
-- `initialize_exchange` seeds the insurance fund PDA and its token account
-- Fee routing: on every fill, `fee * insurance_fund_cut_bps / 10_000` transferred to insurance fund token account
-- `claim_insurance` instruction: program-signed transfer from insurance fund to cover bad debt; update `total_claimed`
-- Admin withdraw: can only withdraw amount above a minimum buffer (e.g. 10,000 USDC)
+### Funding Rate (`lib/engine/funding.ts`)
+- `computeFundingRate(mark, index)` — capped ±75 bps/hr
+- `applyFunding(position, rate)` — longs pay when rate > 0, shorts receive
 
-## Section: Keeper Bots
+### PnL Settlement (`lib/engine/pnl.ts`)
+- `calculateUnrealizedPnl(position, markPrice)` — long/short aware
+- `settlePnl(position, exitPrice, account)` — closes position, returns margin
+- `totalUnrealizedPnl(account, markPrices)` — aggregate across all positions
 
-### Setup
-- Setup: ts-node, @coral-xyz/anchor, @pythnetwork/client, node-cron, dotenv; load keypair from KEEPER_KEYPAIR env var
+### Insurance Fund (`lib/engine/insurance.ts`)
+- `routeFeeToInsurance(fill, cutBps, fund)` — routes fee portion to fund
+- `claimInsurance(fund, amount)` — covers bad debt (partial if insufficient)
+- `adminWithdraw` — only above minimum buffer ($10,000 default)
 
-### Funding Keeper
-- Funding keeper: runs `0 * * * *` (every hour); fetches all Market PDAs; calls `settle_funding` for each; logs rate applied
+### Tests (`lib/engine/__tests__/`)
+- **78 tests** across 5 suites — all passing ✅
+- Coverage: matching (17), margin (24), funding (13), pnl (11), insurance (13)
 
-### Liquidation Keeper
-- Liquidation keeper: runs every 30 seconds; fetches all `TraderAccount` PDAs; computes health for each using latest Pyth price; calls `liquidate_position` for any with health < maintenance margin
+---
 
-### Mark Price Keeper
-- Mark price keeper: listens to `best_bid` / `best_ask` changes; updates Pyth feed internally or triggers `update_mark_price` if needed (if stale > 60s old)
-- All keepers: wrap RPC calls in try/catch; retry 3 times with 1s/2s/4s backoff; log errors with timestamp
+## ✅ Phase 2 — Frontend Data Layer
 
-## Section: Frontend
+React Context stores and hooks wiring the UI to the engine.
 
-### Setup
-- Setup: `npx create-next-app`, install `@solana/wallet-adapter-react`, `@coral-xyz/anchor`, `recharts`, `@pythnetwork/client`; configure `WalletProvider` in `layout.tsx`; import IDL; set `NEXT_PUBLIC_RPC_URL` and `NEXT_PUBLIC_PROGRAM_ID` in `.env.local`
+### Market Store (`lib/store/market-store.tsx`)
+- React context + `useReducer` with a pre-seeded SOL-PERP book
+- Actions: `PLACE_ORDER`, `CANCEL_ORDER`, `SETTLE_FUNDING`, `UPDATE_PRICES`
+- Exports `useMarketStore()` hook
 
-### Pages
-- `/` — Market list table: symbol, mark price, 24h change, funding rate, open interest; each row links to `/trade/[market]`
-- `/trade/[market]` — Three-panel layout: left = OrderBook + PlaceOrderForm, center = price chart (simple line chart via recharts using polled mark prices), right = PositionTable + MarginHealthMeter
-- `/portfolio` — Collateral balance, deposit/withdraw buttons, all positions, trade history table, total unrealized PnL
-- `/markets` — Cards per market: mark price, index price, spread, funding rate (with direction arrow), OI long vs short bar
-
-### Components
-- `OrderBook`: props `{ bids: Order[], asks: Order[] }`; renders two tables color-coded red/green; shows cumulative size bars
-- `PlaceOrderForm`: props `{ market }`; limit/market toggle; side (Long/Short) toggle; size input; leverage slider (1–10x); shows "margin required" and "liquidation price" preview that updates live as user types; submit calls `usePlaceOrder`
-- `PositionTable`: props `{ positions: Position[] }`; shows entry price, mark price, unrealized PnL (color coded), liquidation price, close button
-- `FundingRateBar`: shows current rate as % with direction, countdown to next funding (updates every second), last 8 funding payments as sparkline
-- `MarginHealthMeter`: horizontal bar; green >20%, yellow 10–20%, red <10%
+### Trader Store (`lib/store/trader-store.tsx`)
+- Manages `TraderAccount` state: collateral, positions, insurance fund
+- Actions: `DEPOSIT`, `WITHDRAW`, `APPLY_FILL`, `CLOSE_POSITION`, `SETTLE_FUNDING`, `UPDATE_MARK_PRICE`
+- Exports `useTraderStore()` hook
 
 ### Hooks
-- `useMarket(address)` → `{ market: MarketAccount | null, loading, error }` — polls every 3s
-- `useOrderBook(address)` → `{ bids: Order[], asks: Order[] }` — derived from market account, sorted
-- `useTraderAccount()` → `{ account: TraderAccountData | null, loading }` — fetches PDA for connected wallet
-- `usePlaceOrder()` → `{ placeOrder(params): Promise, loading, error }` — builds tx with correct accounts
-- `useCancelOrder()` → `{ cancelOrder(orderId): Promise, loading }`
-- `useClosePosition()` → `{ closePosition(marketIndex, side): Promise, loading }` — sends market order in opposite direction
+- `useMarket(address?)` — mark price, index price, funding rate, OI
+- `useOrderBook(address?)` — typed bid/ask entries with cumulative sizes and spread
+- `useTraderAccount()` — account with `totalUnrealizedPnl`, `marginHealth`, `healthPct`
+- `usePlaceOrder()` — `placeOrder(params)`, `getOrderPreview(params)`, loading/error
 
-## Section: Testing
+### Providers (`app/layout.tsx`)
+- `<MarketProvider>` and `<TraderProvider>` wrap the entire app
 
-### On-chain Tests (Anchor/Mocha)
-- Initialize exchange and one market (SOL-PERP)
-- Deposit collateral: verify TraderAccount balance updates
-- Place limit order: verify order appears in market bids/asks
-- Place opposing market order: verify fill occurs, positions opened for both traders, fees collected
-- Partial fill: place large limit, small market order; verify partial fill and remainder on book
-- Cancel order: verify order removed, margin returned
-- Settle funding: fast-forward time, call settle_funding, verify PnL updated
-- Liquidation: manipulate mark price to push a trader below maintenance margin; call liquidate_position; verify position closed, insurance fund debited if bad debt
-- Withdraw collateral: attempt over-withdrawal (should fail with InsufficientMargin)
+### Simulator Page (`app/simulator/page.tsx`)
+- Replaced hardcoded formulas with real engine calls:
+  - `requiredInitialMargin`, `liquidationPrice`, `marginHealth`, `calculateUnrealizedPnl`, `computeFundingRate`
+- Added: side toggle (Long/Short), collateral input, position size, live margin health color-coding
 
-### Keeper Unit Tests
-- Mock `Connection` and `Program`; test liquidation-keeper correctly identifies unhealthy accounts
-- Test funding-keeper applies correct funding rate sign (long pays when mark > index)
+---
 
-### Frontend Tests
-- `ScenarioCalculator` renders correct liquidation price for known inputs
-- `PlaceOrderForm` disables submit when size = 0
-- `MarginHealthMeter` shows red when health < 10%
+## 🔜 Phase 3 — Trading UI Components
+
+- `<OrderBook>` with real bid/ask from `useOrderBook`, cumulative size bars
+- `<PlaceOrderForm>` with live margin + liquidation preview from `usePlaceOrder`
+- `<PositionTable>` with real PnL, liquidation price column
+- `<MarginHealthMeter>` — green/yellow/red based on `healthBps`
+- `<FundingRateBar>` — countdown to next period, sparkline
+
+---
+
+## 🔜 Phase 4 — Solana / Anchor On-Chain Program
+
+### Setup
+- `anchor init solperps` — creates Anchor workspace
+- Define IDL in `programs/solperps/src/lib.rs`
+- Define state accounts in `state.rs`: `Market`, `TraderAccount`, `Position`, `Order`
+- Configure `Anchor.toml` for localnet + devnet
+- Localnet validator with Pyth mock oracle
+
+### Instructions
+- `initialize_exchange` — seeds insurance fund PDA + token account
+- `create_market` — create SOL-PERP, ETH-PERP markets
+- `deposit_collateral` — transfer USDC into trader account PDA
+- `place_order` — margin check → matching engine → emit `TradeEvent`
+- `cancel_order` — remove order, unlock margin
+- `settle_funding` — apply hourly funding to all positions (keeper-callable)
+- `liquidate_position` — verify health < maint margin, close position, route penalty
+- `withdraw_collateral` — post-withdrawal margin check
+
+### On-Chain Tests (Anchor/Mocha)
+- Initialize exchange + market
+- Deposit collateral, place/cancel orders
+- Full fill, partial fill, liquidation scenario
+- Funding settlement with time-skip
+
+---
+
+## 🔜 Phase 5 — Wallet Integration & Deployment
+
+- Install `@solana/wallet-adapter-react`, `@coral-xyz/anchor`
+- Add `WalletProvider` to `layout.tsx`
+- Replace mock stores with on-chain RPC calls (using IDL)
+- Keeper bots (TypeScript): funding (hourly), liquidation (30s), mark price (60s stale guard)
+- Devnet deployment via `anchor deploy --provider.cluster devnet`
+- Netlify deployment for frontend
