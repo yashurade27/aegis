@@ -1,0 +1,14 @@
+/home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/deps/serde-3d7b861025316e3b.d: /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/build/serde-9799c36a4826e1df/out/private.rs
+
+/home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/deps/libserde-3d7b861025316e3b.rlib: /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/build/serde-9799c36a4826e1df/out/private.rs
+
+/home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/deps/libserde-3d7b861025316e3b.rmeta: /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/build/serde-9799c36a4826e1df/out/private.rs
+
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/build/serde-9799c36a4826e1df/out/private.rs:
+
+# env-dep:OUT_DIR=/home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/build/serde-9799c36a4826e1df/out

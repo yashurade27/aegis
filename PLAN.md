@@ -7,7 +7,7 @@
 | 1 | Core Rust matching + risk engine (WASM) | ✅ Complete |
 | 2 | Frontend WASM wiring + stores/hooks + simulator | ✅ Complete |
 | 3 | Trading UI components (reusable widgets) | ✅ Complete |
-| 4 | Solana / Anchor on-chain program | 🔜 Planned |
+| 4 | Solana / Anchor on-chain program | ✅ Complete |
 | 5 | Wallet integration + deployment | 🔜 Planned |
 
 ---
@@ -108,30 +108,29 @@ Reusable widgets in `components/trading/`, composed on `/trade`.
 
 ---
 
-## 🔜 Phase 4 — Solana / Anchor On-Chain Program
+## ✅ Phase 4 — Solana / Anchor On-Chain Program
+
+Anchor workspace in `project/solperps/`.
 
 ### Setup
-- `anchor init solperps` — creates Anchor workspace
-- Define IDL in `programs/solperps/src/lib.rs`
-- Define state accounts in `state.rs`: `Market`, `TraderAccount`, `Position`, `Order`
-- Configure `Anchor.toml` for localnet + devnet
-- Localnet validator with Pyth mock oracle
+- Anchor workspace with program `solperps` (`programs/solperps/src/lib.rs`)
+- State accounts in `state.rs`: `Market`, `TraderAccount`, `Position`, `Order`, `Exchange`, `MockOracle`
+- `Anchor.toml` configured for localnet + devnet
+- Mock Pyth oracle (`initialize_oracle`, `update_oracle`) for localnet
 
 ### Instructions
-- `initialize_exchange` — seeds insurance fund PDA + token account
-- `create_market` — create SOL-PERP, ETH-PERP markets
-- `deposit_collateral` — transfer USDC into trader account PDA
-- `place_order` — margin check → matching engine → emit `TradeEvent`
+- `initialize_exchange` — seeds insurance fund PDA + USDC token vault
+- `create_market` — SOL-PERP, ETH-PERP markets
+- `initialize_trader` + `deposit_collateral` / `withdraw_collateral`
+- `place_order` — margin check → match makers (remaining accounts) → resting limit → `TradeEvent`
 - `cancel_order` — remove order, unlock margin
-- `settle_funding` — apply hourly funding to all positions (keeper-callable)
-- `liquidate_position` — verify health < maint margin, close position, route penalty
-- `withdraw_collateral` — post-withdrawal margin check
+- `settle_funding` — keeper-callable hourly funding
+- `liquidate_position` — health check, close, penalty to insurance
 
 ### On-Chain Tests (Anchor/Mocha)
-- Initialize exchange + market
-- Deposit collateral, place/cancel orders
-- Full fill, partial fill, liquidation scenario
-- Funding settlement with time-skip
+- `tests/solperps.ts` — exchange + markets, deposit/cancel, full fill, funding settlement
+- Rust unit tests in `programs/solperps/src/math.rs`
+- Run: `anchor test` (see `solperps/README.md`)
 
 ---
 

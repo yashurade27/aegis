@@ -1,0 +1,9 @@
+/home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/deps/spl_associated_token_account_client-9fec04917a3c41dd.d: /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/lib.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/address.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/instruction.rs
+
+/home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/deps/libspl_associated_token_account_client-9fec04917a3c41dd.rlib: /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/lib.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/address.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/instruction.rs
+
+/home/yash/Projects/Aegis/project/solperps/target/sbpf-solana-solana/release/deps/libspl_associated_token_account_client-9fec04917a3c41dd.rmeta: /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/lib.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/address.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/instruction.rs
+
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/lib.rs:
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/address.rs:
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/instruction.rs:

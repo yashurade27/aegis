@@ -1,0 +1,9 @@
+/home/yash/Projects/Aegis/project/solperps/target/debug/deps/spl_associated_token_account_client-9f8bd29cf1b0ab78.d: /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/lib.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/address.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/instruction.rs
+
+/home/yash/Projects/Aegis/project/solperps/target/debug/deps/libspl_associated_token_account_client-9f8bd29cf1b0ab78.rlib: /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/lib.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/address.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/instruction.rs
+
+/home/yash/Projects/Aegis/project/solperps/target/debug/deps/libspl_associated_token_account_client-9f8bd29cf1b0ab78.rmeta: /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/lib.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/address.rs /home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/instruction.rs
+
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/lib.rs:
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/address.rs:
+/home/yash/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-associated-token-account-client-2.0.0/src/instruction.rs:
