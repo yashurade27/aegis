@@ -14,45 +14,45 @@
 
 ## ✅ Phase 1 — Core Engine Library
 
-Pure TypeScript business logic. Zero external dependencies. Fully tested via Vitest.
+Pure Rust business logic. Zero external dependencies. Configured via Cargo.
 
-### Data Types (`lib/engine/types.ts`)
+### Data Types (`engine/src/types.rs`)
 - `Side`, `OrderType`, `Order`, `Fill`, `Position`, `Market`, `TraderAccount`, `InsuranceFund`
 - Constants: `MAX_FUNDING_RATE_BPS = 75`, `DEFAULT_MAINTENANCE_MARGIN_BPS = 500`
 
-### Matching Engine (`lib/engine/matching.ts`)
-- `matchOrder(market, takerOrder) → Fill[]` — price-time priority
-- `insertOrderIntoBook` — sorted bids (desc) / asks (asc)
-- `cancelOrder` — removes resting order by ID
+### Matching Engine (`engine/src/matching.rs`)
+- `match_order(market, takerOrder) → Fill[]` — price-time priority
+- `insert_order_into_book` — sorted bids (desc) / asks (asc)
+- `cancel_order` — removes resting order by ID
 - Partial fills become resting limit orders
 - Market orders throw `InsufficientLiquidity` if book is thin
 - Fee: `size × price × feeBps / 10000`
 
-### Margin System (`lib/engine/margin.ts`)
-- `requiredInitialMargin(notional, leverage)` → `notional / leverage`
-- `requiredMaintenanceMargin(notional)` → `notional × 5%`
-- `marginHealth(collateral, pnl, notional)` → health in bps
-- `liquidationPrice(entry, side, maintBps, leverage)` — long/short formulas
-- `canWithdraw` — rejects if withdrawal breaches maintenance margin
-- `isLiquidatable` — health < maintenance margin check
+### Margin System (`engine/src/margin.rs`)
+- `required_initial_margin(notional, leverage)` → `notional / leverage`
+- `required_maintenance_margin(notional)` → `notional × 5%`
+- `margin_health(collateral, pnl, notional)` → health in bps
+- `liquidation_price(entry, side, maintBps, leverage)` — long/short formulas
+- `can_withdraw` — rejects if withdrawal breaches maintenance margin
+- `is_liquidatable` — health < maintenance margin check
 
-### Funding Rate (`lib/engine/funding.ts`)
-- `computeFundingRate(mark, index)` — capped ±75 bps/hr
-- `applyFunding(position, rate)` — longs pay when rate > 0, shorts receive
+### Funding Rate (`engine/src/funding.rs`)
+- `compute_funding_rate(mark, index)` — capped ±75 bps/hr
+- `apply_funding(position, rate)` — longs pay when rate > 0, shorts receive
 
-### PnL Settlement (`lib/engine/pnl.ts`)
-- `calculateUnrealizedPnl(position, markPrice)` — long/short aware
-- `settlePnl(position, exitPrice, account)` — closes position, returns margin
-- `totalUnrealizedPnl(account, markPrices)` — aggregate across all positions
+### PnL Settlement (`engine/src/pnl.rs`)
+- `calculate_unrealized_pnl(position, markPrice)` — long/short aware
+- `settle_pnl(position, exitPrice, account)` — closes position, returns margin
+- `total_unrealized_pnl(account, markPrices)` — aggregate across all positions
 
-### Insurance Fund (`lib/engine/insurance.ts`)
-- `routeFeeToInsurance(fill, cutBps, fund)` — routes fee portion to fund
-- `claimInsurance(fund, amount)` — covers bad debt (partial if insufficient)
-- `adminWithdraw` — only above minimum buffer ($10,000 default)
+### Insurance Fund (`engine/src/insurance.rs`)
+- `route_fee_to_insurance(fill, cutBps, fund)` — routes fee portion to fund
+- `claim_insurance(fund, amount)` — covers bad debt (partial if insufficient)
+- `admin_withdraw` — only above minimum buffer ($10,000 default)
 
-### Tests (`lib/engine/__tests__/`)
-- **78 tests** across 5 suites — all passing ✅
-- Coverage: matching (17), margin (24), funding (13), pnl (11), insurance (13)
+### Tests (`engine/src/`)
+- Need to port tests to Rust (`cargo test`)
+- Coverage: matching, margin, funding, pnl, insurance
 
 ---
 
