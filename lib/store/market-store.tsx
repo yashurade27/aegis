@@ -27,6 +27,7 @@ import {
   Side,
   OrderType,
 } from '@/lib/types';
+import { fromWasm, type CancelOrderResult, type MatchOrderResult } from '@/lib/wasm-utils';
 
 // ── State ──────────────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ export interface MarketState {
 }
 
 const getInitialMarket = () => {
-  const m = createMarket('SOL-PERP', 'SOL', 'USD', 10, 8000);
+  let m = createMarket('SOL-PERP', 'SOL', 'USD', 10, 8000);
   m.markPrice = 142.5;
   m.indexPrice = 142.0;
 
@@ -47,7 +48,7 @@ const getInitialMarket = () => {
 
   // Asks (sells) — ascending from 142.50
   [142.5, 143.0, 143.5, 144.0, 144.5].forEach((price, i) => {
-    insertOrderIntoBook(m, {
+    m = insertOrderIntoBook(m, {
       id: id++,
       trader: `market-maker-${i}`,
       side: Side.Short,
@@ -60,7 +61,7 @@ const getInitialMarket = () => {
 
   // Bids (buys) — descending from 142.00
   [142.0, 141.5, 141.0, 140.5, 140.0].forEach((price, i) => {
-    insertOrderIntoBook(m, {
+    m = insertOrderIntoBook(m, {
       id: id++,
       trader: `market-maker-${i + 5}`,
       side: Side.Long,
@@ -94,11 +95,13 @@ function reducer(state: MarketState, action: Action): MarketState {
   switch (action.type) {
     case 'PLACE_ORDER': {
       try {
-        const fills = matchOrder(market, { ...action.order });
+        const result = fromWasm<MatchOrderResult>(
+          matchOrder(market, { ...action.order })
+        );
         return {
           ...state,
-          market,
-          recentFills: [...fills, ...state.recentFills].slice(0, 50),
+          market: result.market,
+          recentFills: [...result.fills, ...state.recentFills].slice(0, 50),
           error: null,
         };
       } catch (e) {
@@ -107,8 +110,14 @@ function reducer(state: MarketState, action: Action): MarketState {
     }
 
     case 'CANCEL_ORDER': {
-      cancelOrderFromBook(market, BigInt(action.orderId), action.side);
-      return { ...state, market, error: null };
+      const result = fromWasm<CancelOrderResult>(
+        cancelOrderFromBook(market, BigInt(action.orderId), action.side)
+      );
+      return {
+        ...state,
+        market: result.market,
+        error: null,
+      };
     }
 
     case 'SETTLE_FUNDING': {
