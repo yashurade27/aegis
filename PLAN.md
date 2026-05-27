@@ -2,19 +2,19 @@
 
 ## Status Overview
 
-| Phase | Name | Status |
-|-------|------|--------|
-| 1 | Core Engine Library | ✅ Complete |
-| 2 | Frontend Data Layer | ✅ Complete |
-| 3 | Trading UI Components | 🔜 Planned |
-| 4 | Solana / Anchor On-Chain Program | 🔜 Planned |
-| 5 | Wallet Integration & Deployment | 🔜 Planned |
+| Phase | Scope | Status |
+|-------|--------|--------|
+| 1 | Core Rust matching + risk engine (WASM) | ✅ Complete |
+| 2 | Frontend WASM wiring + stores/hooks + simulator | ✅ Complete |
+| 3 | Trading UI components (reusable widgets) | ✅ Complete |
+| 4 | Solana / Anchor on-chain program | 🔜 Planned |
+| 5 | Wallet integration + deployment | 🔜 Planned |
 
 ---
 
-## ✅ Phase 1 — Core Engine Library
+## ✅ Phase 1 — Core Engine Library (Rust + WASM)
 
-Pure Rust business logic. Zero external dependencies. Configured via Cargo.
+Pure Rust business logic (zero external deps). This repo compiles it to WebAssembly and exposes a JS/TS API consumed by the frontend.
 
 ### Data Types (`engine/src/types.rs`)
 - `Side`, `OrderType`, `Order`, `Fill`, `Position`, `Market`, `TraderAccount`, `InsuranceFund`
@@ -51,14 +51,22 @@ Pure Rust business logic. Zero external dependencies. Configured via Cargo.
 - `admin_withdraw` — only above minimum buffer ($10,000 default)
 
 ### Tests (`engine/src/`)
-- Need to port tests to Rust (`cargo test`)
-- Coverage: matching, margin, funding, pnl, insurance
+- Rust unit tests: **not yet ported** (no `cargo test` suite currently present in `engine/src/`).
+- Frontend/WASM tests: implemented via Vitest (`lib/store/market-store.test.tsx`, `__tests__/integration.test.ts`) to validate the engine’s exported functions.
 
 ---
 
 ## ✅ Phase 2 — Frontend Data Layer
 
 React Context stores and hooks wiring the UI to the engine.
+
+### WASM initialization
+- `components/WasmProvider.tsx` initializes the WASM engine on the client.
+- Vitest bootstrap (`vitest.setup.ts`) initializes WASM for test runs.
+
+### WASM interop detail
+- Some engine return values come back as `Map` objects from WASM glue code.
+- `lib/wasm-utils.ts` converts those `Map` structures into plain JS objects for React state/tests.
 
 ### Market Store (`lib/store/market-store.tsx`)
 - React context + `useReducer` with a pre-seeded SOL-PERP book
@@ -82,17 +90,21 @@ React Context stores and hooks wiring the UI to the engine.
 ### Simulator Page (`app/simulator/page.tsx`)
 - Replaced hardcoded formulas with real engine calls:
   - `requiredInitialMargin`, `liquidationPrice`, `marginHealth`, `calculateUnrealizedPnl`, `computeFundingRate`
-- Added: side toggle (Long/Short), collateral input, position size, live margin health color-coding
+- Added: side toggle (Long/Short), collateral input, position size, live margin health color-coding.
+- Note: this page is currently a scenario simulator; full trading widgets are planned in Phase 3.
 
 ---
 
-## 🔜 Phase 3 — Trading UI Components
+## ✅ Phase 3 — Trading UI Components
 
-- `<OrderBook>` with real bid/ask from `useOrderBook`, cumulative size bars
-- `<PlaceOrderForm>` with live margin + liquidation preview from `usePlaceOrder`
-- `<PositionTable>` with real PnL, liquidation price column
+Reusable widgets in `components/trading/`, composed on `/trade`.
+
+- `<OrderBook>` — real bid/ask from `useOrderBook`, cumulative size depth bars
+- `<PlaceOrderForm>` — live margin + liquidation preview from `usePlaceOrder`
+- `<PositionTable>` — real PnL via engine, liquidation price column
 - `<MarginHealthMeter>` — green/yellow/red based on `healthBps`
-- `<FundingRateBar>` — countdown to next period, sparkline
+- `<FundingRateBar>` — funding rate bar + hourly projection on $10k notional
+- Tests: `components/trading/__tests__/trading-components.test.tsx`
 
 ---
 
