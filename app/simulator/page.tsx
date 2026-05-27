@@ -9,8 +9,9 @@ import {
   marginHealth,
   calculateUnrealizedPnl,
   computeFundingRate,
-  Side,
-} from '@/lib/engine';
+
+} from '@/engine/pkg/engine';
+import { Side } from '@/lib/types';
 
 export default function Simulator() {
   const [price, setPrice] = useState(142.5);

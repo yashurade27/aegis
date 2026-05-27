@@ -1,16 +1,17 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum Side {
     Long,
     Short,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum OrderType {
     Limit,
     Market,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Order {
     pub id: u64,
     pub trader: String,
@@ -18,10 +19,11 @@ pub struct Order {
     pub order_type: OrderType,
     pub price: f64,
     pub size: f64,
-    pub timestamp: u64,
+    pub timestamp: f64, // TS date.now() is a large number
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Fill {
     pub maker: String,
     pub taker: String,
@@ -31,7 +33,8 @@ pub struct Fill {
     pub side: Side,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Position {
     pub market: String,
     pub side: Side,
@@ -41,7 +44,8 @@ pub struct Position {
     pub unrealized_pnl: f64,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Market {
     pub address: String,
     pub base_asset: String,
@@ -57,14 +61,16 @@ pub struct Market {
     pub insurance_fund_cut_bps: u32,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TraderAccount {
     pub owner: String,
     pub collateral_balance: f64,
     pub positions: Vec<Position>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct InsuranceFund {
     pub balance: f64,
     pub total_collected: f64,

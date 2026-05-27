@@ -7,7 +7,7 @@
 
 import { useMemo } from 'react';
 import { useMarketStore } from '@/lib/store/market-store';
-import { computeFundingRate } from '@/lib/engine';
+import { computeFundingRate } from '@/engine/pkg/engine';
 
 export function useMarket(address?: string) {
   const { state } = useMarketStore();

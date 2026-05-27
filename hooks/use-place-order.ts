@@ -8,13 +8,8 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useMarketStore } from '@/lib/store/market-store';
 import { useTraderStore } from '@/lib/store/trader-store';
-import {
-  type Fill,
-  Side,
-  OrderType,
-  requiredInitialMargin,
-  liquidationPrice,
-} from '@/lib/engine';
+import { requiredInitialMargin, liquidationPrice } from '@/engine/pkg/engine';
+import { type Fill, Side, OrderType } from '@/lib/types';
 
 export interface PlaceOrderParams {
   side: Side;

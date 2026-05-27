@@ -13,18 +13,20 @@ import React, {
   type ReactNode,
 } from 'react';
 import {
-  type Market,
-  type Order,
-  type Fill,
-  Side,
-  OrderType,
   createMarket,
   matchOrder,
   cancelOrder as cancelOrderFromBook,
   insertOrderIntoBook,
   computeFundingRate,
   applyFunding,
-} from '@/lib/engine';
+} from '@/engine/pkg/engine';
+import {
+  type Market,
+  type Order,
+  type Fill,
+  Side,
+  OrderType,
+} from '@/lib/types';
 
 // ── State ──────────────────────────────────────────────────────────────────
 
@@ -34,7 +36,7 @@ export interface MarketState {
   error: string | null;
 }
 
-const INITIAL_MARKET = (() => {
+const getInitialMarket = () => {
   const m = createMarket('SOL-PERP', 'SOL', 'USD', 10, 8000);
   m.markPrice = 142.5;
   m.indexPrice = 142.0;
@@ -70,7 +72,7 @@ const INITIAL_MARKET = (() => {
   });
 
   return m;
-})();
+};
 
 // ── Actions ────────────────────────────────────────────────────────────────
 
@@ -105,7 +107,7 @@ function reducer(state: MarketState, action: Action): MarketState {
     }
 
     case 'CANCEL_ORDER': {
-      cancelOrderFromBook(market, action.orderId, action.side);
+      cancelOrderFromBook(market, BigInt(action.orderId), action.side);
       return { ...state, market, error: null };
     }
 
@@ -153,11 +155,11 @@ const MarketContext = createContext<MarketContextValue | null>(null);
 let nextOrderId = 1000;
 
 export function MarketProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, {
-    market: INITIAL_MARKET,
+  const [state, dispatch] = useReducer(reducer, undefined, () => ({
+    market: getInitialMarket(),
     recentFills: [],
     error: null,
-  });
+  }));
 
   const placeOrder = useCallback(
     (params: {

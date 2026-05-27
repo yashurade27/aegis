@@ -7,7 +7,7 @@
 
 import { useMemo } from 'react';
 import { useMarketStore } from '@/lib/store/market-store';
-import { type Order } from '@/lib/engine';
+import { type Order } from '@/lib/types';
 
 export interface OrderBookEntry {
   price: number;

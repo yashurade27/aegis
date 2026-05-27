@@ -7,11 +7,8 @@
 
 import { useMemo } from 'react';
 import { useTraderStore } from '@/lib/store/trader-store';
-import {
-  totalUnrealizedPnl,
-  marginHealth,
-  BPS_DENOMINATOR,
-} from '@/lib/engine';
+import { totalUnrealizedPnl, marginHealth } from '@/engine/pkg/engine';
+import { BPS_DENOMINATOR } from '@/lib/types';
 
 export function useTraderAccount() {
   const { state, deposit, withdraw } = useTraderStore();

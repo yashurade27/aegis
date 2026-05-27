@@ -12,20 +12,8 @@ import React, {
   useCallback,
   type ReactNode,
 } from 'react';
-import {
-  type TraderAccount,
-  type Fill,
-  type InsuranceFund,
-  Side,
-  calculateUnrealizedPnl,
-  settlePnl,
-  applyFunding,
-  computeFundingRate,
-  canWithdraw,
-  routeFeeToInsurance,
-  createInsuranceFund,
-  totalUnrealizedPnl,
-} from '@/lib/engine';
+import { calculateUnrealizedPnl, settlePnl, applyFunding, computeFundingRate, canWithdraw, routeFeeToInsurance, createInsuranceFund, totalUnrealizedPnl } from '@/engine/pkg/engine';
+import { type TraderAccount, type Fill, type InsuranceFund, Side } from '@/lib/types';
 
 // ── State ──────────────────────────────────────────────────────────────────
 
@@ -37,7 +25,7 @@ export interface TraderState {
   error: string | null;
 }
 
-const INITIAL_STATE: TraderState = {
+const getInitialState = (): TraderState => ({
   account: {
     owner: 'demo-user',
     collateralBalance: 10000, // $10,000 starting collateral
@@ -47,7 +35,7 @@ const INITIAL_STATE: TraderState = {
   markPrices: new Map([['SOL-PERP', 142.5]]),
   loading: false,
   error: null,
-};
+});
 
 // ── Actions ────────────────────────────────────────────────────────────────
 
@@ -174,7 +162,7 @@ const TraderContext = createContext<TraderContextValue | null>(null);
 // ── Provider ───────────────────────────────────────────────────────────────
 
 export function TraderProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [state, dispatch] = useReducer(reducer, undefined, getInitialState);
 
   const deposit = useCallback((amount: number) => {
     dispatch({ type: 'DEPOSIT', amount });
