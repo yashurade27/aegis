@@ -32,6 +32,14 @@ export function Header() {
             Home
           </Link>
           <Link
+            href="/trade"
+            className={`font-label-mono text-label-mono uppercase transition-colors ${
+              isActive('/trade') ? 'text-primary border-b border-primary pb-2' : 'text-on-surface-variant hover:text-primary'
+            }`}
+          >
+            Trade
+          </Link>
+          <Link
             href="/simulator"
             className={`font-label-mono text-label-mono uppercase transition-colors ${
               isActive('/simulator') ? 'text-primary border-b border-primary pb-2' : 'text-on-surface-variant hover:text-primary'
