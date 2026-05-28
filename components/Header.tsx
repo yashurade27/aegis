@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 export function Header() {
   const pathname = usePathname();
@@ -48,9 +49,12 @@ export function Header() {
             Simulator
           </Link>
         </div>
-        <a href="/" className="bg-primary text-on-primary px-6 py-2 font-label-mono text-label-mono uppercase border border-primary hover:bg-transparent hover:text-primary transition-colors inline-block">
-          LAUNCH APP
-        </a>
+        <div className="flex items-center gap-3">
+          <WalletMultiButton className="bg-transparent border border-grid-line text-on-surface-variant px-4 py-2 font-label-mono text-label-mono uppercase hover:text-primary hover:border-primary transition-colors" />
+          <a href="/" className="bg-primary text-on-primary px-6 py-2 font-label-mono text-label-mono uppercase border border-primary hover:bg-transparent hover:text-primary transition-colors inline-block">
+            LAUNCH APP
+          </a>
+        </div>
       </nav>
     </header>
   );

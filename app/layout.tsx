@@ -1,8 +1,10 @@
 import './globals.css';
+import '@solana/wallet-adapter-react-ui/styles.css';
 import type { Metadata } from 'next';
 import { MarketProvider } from '@/lib/store/market-store';
 import { WasmProvider } from '@/components/WasmProvider';
 import { TraderProvider } from '@/lib/store/trader-store';
+import { SolanaProvider } from '@/components/SolanaProvider';
 
 export const metadata: Metadata = {
   title: 'AEGIS VAULT | Institutional Grade Security',
@@ -24,13 +26,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-background text-on-surface font-body-md min-h-screen overflow-x-hidden">
-        <WasmProvider>
-          <MarketProvider>
-          <TraderProvider>
-            {children}
-          </TraderProvider>
-        </MarketProvider>
-        </WasmProvider>
+        <SolanaProvider>
+          <WasmProvider>
+            <MarketProvider>
+              <TraderProvider>{children}</TraderProvider>
+            </MarketProvider>
+          </WasmProvider>
+        </SolanaProvider>
       </body>
     </html>
   );
