@@ -43,15 +43,6 @@ export default function Strategy() {
                 </p>
               </div>
 
-              <div className="flex gap-4 flex-wrap">
-                <button className="px-6 py-2 border border-primary text-primary font-label-mono text-label-mono uppercase hover:bg-primary hover:text-on-primary transition-colors">
-                  LAUNCH APP
-                </button>
-                <button className="px-6 py-2 border border-primary text-primary font-label-mono text-label-mono uppercase hover:bg-primary hover:text-on-primary transition-colors">
-                  READ DOCS
-                </button>
-              </div>
-
               {/* Capital Strategy Box */}
               <div className="border border-grid-line bg-surface-container-lowest p-6 flex flex-col gap-6">
                 <h3 className="font-headline-lg text-headline-lg uppercase">THE 80/20 CAPITAL STRATEGY</h3>

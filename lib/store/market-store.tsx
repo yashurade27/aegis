@@ -82,6 +82,7 @@ type Action =
   | { type: 'CANCEL_ORDER'; orderId: number; side: Side }
   | { type: 'SETTLE_FUNDING' }
   | { type: 'UPDATE_PRICES'; markPrice: number; indexPrice: number }
+  | { type: 'JITTER_BOOK' }
   | { type: 'CLEAR_ERROR' };
 
 function reducer(state: MarketState, action: Action): MarketState {
@@ -133,6 +134,18 @@ function reducer(state: MarketState, action: Action): MarketState {
       return { ...state, market };
     }
 
+    case 'JITTER_BOOK': {
+      // Gently vary maker liquidity so the book feels alive. We only touch
+      // synthetic market-maker orders, never the user's resting orders.
+      const jitter = (o: Order) =>
+        o.trader.startsWith('market-maker-')
+          ? { ...o, size: Math.max(1, Math.round(o.size * (0.85 + Math.random() * 0.3))) }
+          : o;
+      market.bids = market.bids.map(jitter);
+      market.asks = market.asks.map(jitter);
+      return { ...state, market };
+    }
+
     case 'CLEAR_ERROR':
       return { ...state, error: null };
 
@@ -155,6 +168,7 @@ interface MarketContextValue {
   cancelOrder: (orderId: number, side: Side) => void;
   settleFunding: () => void;
   updatePrices: (markPrice: number, indexPrice: number) => void;
+  jitterBook: () => void;
 }
 
 const MarketContext = createContext<MarketContextValue | null>(null);
@@ -207,9 +221,13 @@ export function MarketProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const jitterBook = useCallback(() => {
+    dispatch({ type: 'JITTER_BOOK' });
+  }, []);
+
   return (
     <MarketContext.Provider
-      value={{ state, placeOrder, cancelOrder, settleFunding, updatePrices }}
+      value={{ state, placeOrder, cancelOrder, settleFunding, updatePrices, jitterBook }}
     >
       {children}
     </MarketContext.Provider>

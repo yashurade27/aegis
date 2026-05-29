@@ -13,7 +13,7 @@ import { useTraderStore } from '@/lib/store/trader-store';
 import { requiredInitialMargin, liquidationPrice } from '@/engine/pkg/engine';
 import { type Fill, Side, OrderType } from '@/lib/types';
 import { useSolanaContext } from '@/lib/solana/solana-context';
-import { DEFAULT_MARKET_SYMBOL } from '@/lib/solana/constants';
+import { DEFAULT_MARKET_SYMBOL, USE_ONCHAIN } from '@/lib/solana/constants';
 import { decodeSide, encodeOrderType, encodeSide } from '@/lib/solana/anchor-utils';
 import { fromBaseUnits, fromPriceUnits, toBaseUnits, toPriceUnits } from '@/lib/solana/conversions';
 import { exchangePda, marketPda, orderPda, positionPda, traderPda } from '@/lib/solana/pdas';
@@ -49,7 +49,7 @@ export function usePlaceOrder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const useOnchain = Boolean(solana?.program && solana.wallet?.publicKey);
+  const useOnchain = USE_ONCHAIN && Boolean(solana?.program && solana.wallet?.publicKey);
   const market = onchainMarket ?? marketState.market;
 
   const getOrderPreview = useCallback(
@@ -228,6 +228,7 @@ export function usePlaceOrder() {
             params.leverage,
             orderId
           )
+          // @ts-ignore: Anchor auto-resolves some PDAs but we explicitly pass them
           .accounts({
             taker: owner,
             market: marketKey,
@@ -236,7 +237,7 @@ export function usePlaceOrder() {
             takerPosition,
             restingOrder,
             systemProgram: SystemProgram.programId,
-          })
+          } as any)
           .remainingAccounts(remaining)
           .rpc();
 

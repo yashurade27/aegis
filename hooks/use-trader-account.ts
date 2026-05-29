@@ -10,7 +10,7 @@ import { useTraderStore } from '@/lib/store/trader-store';
 import { calculateUnrealizedPnl, marginHealth, totalUnrealizedPnl } from '@/engine/pkg/engine';
 import { BPS_DENOMINATOR, Side, type Position, type TraderAccount } from '@/lib/types';
 import { useSolanaContext } from '@/lib/solana/solana-context';
-import { DEFAULT_MARKET_SYMBOL, DEFAULT_USDC_MINT } from '@/lib/solana/constants';
+import { DEFAULT_MARKET_SYMBOL, DEFAULT_USDC_MINT, USE_ONCHAIN } from '@/lib/solana/constants';
 import { fromBaseUnits, fromPriceUnits, toUsdcUnits } from '@/lib/solana/conversions';
 import { marketPda, positionPda, traderPda } from '@/lib/solana/pdas';
 import { ensureTraderAccount } from '@/lib/solana/trader';
@@ -30,7 +30,7 @@ export function useTraderAccount() {
   const [onchainLoading, setOnchainLoading] = useState(false);
   const [onchainError, setOnchainError] = useState<string | null>(null);
 
-  const useOnchain = Boolean(solana?.program && solana.wallet?.publicKey);
+  const useOnchain = USE_ONCHAIN && Boolean(solana?.program && solana.wallet?.publicKey);
 
   const fetchOnchain = useCallback(async () => {
     if (!useOnchain || !solana?.program || !solana.wallet.publicKey) return;
@@ -186,6 +186,7 @@ export function useTraderAccount() {
 
         await solana.program.methods
           .depositCollateral(toUsdcUnits(amount))
+          // @ts-ignore
           .accounts({
             owner,
             exchange,
@@ -193,7 +194,7 @@ export function useTraderAccount() {
             traderVault,
             ownerTokenAccount,
             tokenProgram: TOKEN_PROGRAM_ID,
-          })
+          } as any)
           .rpc();
 
         await fetchOnchain();

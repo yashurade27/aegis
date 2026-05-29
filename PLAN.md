@@ -8,7 +8,8 @@
 | 2 | Frontend WASM wiring + stores/hooks + simulator | ✅ Complete |
 | 3 | Trading UI components (reusable widgets) | ✅ Complete |
 | 4 | Solana / Anchor on-chain program | ✅ Complete |
-| 5 | Wallet integration + deployment | 🔜 Planned |
+| 5 | Wallet integration + keepers + deployment | 🔧 Mostly Complete (deploy remaining) |
+| 6 | Demo polish — live local market, distinct vaults, keeper setup | ✅ Complete |
 
 ---
 
@@ -134,11 +135,75 @@ Anchor workspace in `project/solperps/`.
 
 ---
 
-## 🔜 Phase 5 — Wallet Integration & Deployment
+## ✅ / 🔧 Phase 5 — Wallet Integration, Keepers & Deployment
 
-- Install `@solana/wallet-adapter-react`, `@coral-xyz/anchor`
-- Add `WalletProvider` to `layout.tsx`
-- Replace mock stores with on-chain RPC calls (using IDL)
-- Keeper bots (TypeScript): funding (hourly), liquidation (30s), mark price (60s stale guard)
-- Devnet deployment via `anchor deploy --provider.cluster devnet`
-- Netlify deployment for frontend
+### ✅ Wallet Connect + Live RPC (Complete)
+- Installed `@solana/wallet-adapter-react`, `@solana/wallet-adapter-react-ui`, `@coral-xyz/anchor`
+- `components/SolanaProvider.tsx` wraps the app with `ConnectionProvider` → `WalletProvider` → `WalletModalProvider`
+- `lib/solana/solana-context.ts` provides `useSolanaContext()` with connection, wallet, Anchor provider, and program
+- `WalletMultiButton` in `Header.tsx` for wallet connect CTA
+- **Removed** redundant "LAUNCH APP" button from header (was confusing next to wallet connect)
+
+### ✅ On-Chain Data Hooks (Complete)
+- `hooks/use-market.ts` — fetches `program.account.market.fetchNullable()` every 4s when wallet connected, falls back to WASM mock when disconnected
+- `hooks/use-trader-account.ts` — fetches `traderAccount` + `position` PDAs on-chain, derives margin health, supports on-chain deposit/withdraw via `depositCollateral` / `withdrawCollateral` instructions
+- `hooks/use-place-order.ts` — on-chain `place_order` instruction when wallet connected
+
+### ✅ Price Chart on /trade (Complete)
+- `components/trading/PriceChart.tsx` — recharts `AreaChart` polling mark price every 3s, rolling 100-point buffer
+- Integrated as the centrepiece panel on `/trade` (replaces the old static market info panel)
+- Shows live price, delta from session start, green/red color based on direction
+- Matches Aegis dark terminal aesthetic
+
+### ✅ Keeper Bots (Complete — 3 modules)
+- `tools/keepers/funding-keeper.ts` (~50 lines) — calls `settle_funding` instruction hourly
+- `tools/keepers/mark-price-keeper.ts` (~95 lines) — fetches real SOL/USD from Pyth devnet feed, calls `update_oracle` on-chain every 60s
+- `tools/keepers/liquidation-keeper.ts` (~70 lines) — scans all Position PDAs via `getProgramAccounts`, checks collateral vs maintenance margin, calls `liquidate_position` for undercollateralized accounts every 30s
+- `tools/keepers/run-keepers.ts` — thin orchestrator that starts all 3 keepers concurrently with graceful SIGINT shutdown
+- Run with: `npm run keepers:start`
+
+### ✅ Live Pyth Oracle Config (Complete)
+- Pyth devnet SOL/USD feed address added to `.env` (`PYTH_SOL_USD_FEED=J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix`)
+- `lib/solana/constants.ts` — added `PYTH_SOL_USD_FEED` constant
+- `lib/solana/pdas.ts` — added `oraclePda(market)` helper for `["oracle", market]` seed
+- **Note:** The Anchor program uses a `MockOracle` account with `update_oracle` instruction. The mark-price keeper feeds real Pyth data into it — no Anchor program changes needed.
+
+### 🔜 Remaining
+
+- [ ] **Devnet deployment** — `anchor deploy --provider.cluster devnet`, then `npm run keepers:setup` (initialize exchange + market + oracle)
+- [ ] **Netlify frontend deployment** — `next build` + deploy via `netlify.toml` (already configured)
+- [ ] **End-to-end testing** — connect Phantom wallet on devnet, deposit collateral, place a trade, verify keepers update mark price and settle funding
+- [ ] **Rust unit tests** — port engine tests to `cargo test` suite in `engine/src/`
+
+---
+
+## ✅ Phase 6 — Demo Polish
+
+### On-chain mode is now opt-in
+Connecting a wallet no longer forces the UI into on-chain mode while the program
+is undeployed (which made every market/order-book/position read back empty).
+- `lib/solana/constants.ts` — added `USE_ONCHAIN` (driven by `NEXT_PUBLIC_USE_ONCHAIN`)
+- `use-market`, `use-order-book`, `use-trader-account`, `use-place-order` now gate on `USE_ONCHAIN`
+- Default = local WASM-engine "dummy market"; set `NEXT_PUBLIC_USE_ONCHAIN=true` after `keepers:setup`
+
+### Live local market
+- `components/MarketSimulator.tsx` — random-walks the mark/index price every 1.5s and jitters maker liquidity every 3s, mirroring the new price into the trader store so position PnL updates live
+- `lib/store/market-store.tsx` — added `JITTER_BOOK` action + `jitterBook()`
+- `/trade` price chart + order book are now live, and Long/Short opens positions against the seeded book
+
+### Distinct vault pages (`/vault/[id]`)
+- Per-vault content: rebalance events, strategy insight, capital-split ratio (conic-gradient pie), accent color, allocation — each vault now reads clearly differently
+- `DEPOSIT` → `/deposit?vault=<id>`, `MANAGE` → `/trade` (valid `<Link>`s, no nested `<button>`)
+- Live NAV chart keyed per vault
+
+### Simulator graph
+- `app/simulator/page.tsx` — replaced the hardcoded static SVG with a real recharts equity-curve `AreaChart` computed from the engine PnL across the time horizon, with a break-even reference line
+
+### Button cleanup
+- Removed the remaining `LAUNCH APP` / `READ DOCS` buttons from `/strategy`
+- Landing CTA now links to the vault marketplace
+
+### Keeper setup + resilience
+- `tools/setup/init-exchange.ts` + `npm run keepers:setup` — idempotently airdrops the keeper wallet (devnet), verifies the USDC mint, and runs `initialize_exchange` → `create_market` → `initialize_oracle`
+- `run-keepers.ts` — checks/airdrops the wallet balance on startup (fixes "Attempt to debit an account but found no record of a prior credit") and warns if the market isn't initialized
+- `funding-keeper` / `mark-price-keeper` — now skip cleanly when the market/oracle don't exist yet instead of throwing opaque simulation errors

@@ -5,6 +5,7 @@ import { MarketProvider } from '@/lib/store/market-store';
 import { WasmProvider } from '@/components/WasmProvider';
 import { TraderProvider } from '@/lib/store/trader-store';
 import { SolanaProvider } from '@/components/SolanaProvider';
+import { MarketSimulator } from '@/components/MarketSimulator';
 
 export const metadata: Metadata = {
   title: 'AEGIS VAULT | Institutional Grade Security',
@@ -29,7 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SolanaProvider>
           <WasmProvider>
             <MarketProvider>
-              <TraderProvider>{children}</TraderProvider>
+              <TraderProvider>
+                <MarketSimulator />
+                {children}
+              </TraderProvider>
             </MarketProvider>
           </WasmProvider>
         </SolanaProvider>

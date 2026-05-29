@@ -30,19 +30,6 @@ export default function LandingPage() {
                 80% principal protection through lending. 20% alpha engine capturing funding rates and basis trading. Audited. Algorithmic. Decentralized.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Link href="/">
-                  <button className="px-8 py-3 bg-primary text-on-primary font-label-mono text-label-mono uppercase border border-primary hover:opacity-90 transition-opacity w-full sm:w-auto">
-                    LAUNCH APP
-                  </button>
-                </Link>
-                <a href="#how-it-works">
-                  <button className="px-8 py-3 text-primary font-label-mono text-label-mono uppercase border border-primary hover:bg-primary hover:text-on-primary transition-colors w-full sm:w-auto">
-                    LEARN MORE
-                  </button>
-                </a>
-              </div>
-
               {/* Key Numbers */}
               <div className="grid grid-cols-3 gap-4 pt-6 border-t border-grid-line">
                 <div className="flex flex-col gap-1">
@@ -338,10 +325,11 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <Link href="/">
-              <button className="px-12 py-4 bg-primary text-on-primary font-label-mono text-label-mono uppercase border border-primary hover:opacity-90 transition-opacity text-lg">
-                LAUNCH APP
-              </button>
+            <Link
+              href="/"
+              className="px-8 py-3 bg-primary text-on-primary font-label-mono text-label-mono uppercase border border-primary hover:opacity-90 transition-opacity"
+            >
+              EXPLORE VAULTS
             </Link>
           </section>
         </div>

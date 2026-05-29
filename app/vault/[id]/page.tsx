@@ -1,8 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import {
+  AreaChart,
+  Area,
+  ResponsiveContainer,
+} from 'recharts';
 
 const vaultData: Record<string, any> = {
   'eth-momentum': {
@@ -22,15 +28,150 @@ const vaultData: Record<string, any> = {
     liquidationBuffer: 42,
     effectiveLeverage: '2.1x',
     unrealizedPnl: '+$2,105.19',
+    splitRatio: '80/20',
+    splitPrincipal: 80,
+    accent: '#627EEA',
+    insight:
+      'ETH showing strong bullish momentum. Vault holding a 3.3x long with a dynamic hedge that trims exposure on volatility spikes.',
     allocation: [
       { name: 'STABLE_LENDING', value: 80, apy: '4.8%', exchanges: 'Solend • Kamino' },
       { name: 'ETH_PERPS_MOMENTUM', value: 20, lev: '3.3x', exchanges: 'Drift • Zeta' },
     ],
+    events: [
+      { label: 'REBALANCED_ETH-PERP_EXPOSURE', time: '2024-05-23 14:32:18', desc: 'Reduced exposure to 1.5x due to volatility threshold.' },
+      { label: 'MOMENTUM_FLIP_TRIGGERED', time: '2024-05-22 18:47:56', desc: 'Signal strength 88/100. Increased long exposure.' },
+      { label: 'HARVESTED_LENDING_YIELD', time: '2024-05-22 09:15:42', desc: '$9.50 of rewards compounded into vault.' },
+      { label: 'DAILY_AUDIT_VERIFIED', time: '2024-05-22 00:05:23', desc: 'All offsets accounted for in multisig.' },
+    ],
   },
+  'conservative-sql': {
+    name: 'CONSERVATIVE SOL',
+    id: '0x1-SOL-01',
+    status: 'OPTIMIZED',
+    description: 'Low-risk lending strategy with downside protection on Solana',
+    nav: '$120.45',
+    navChange: '+0.02%',
+    position: '124.5 SOL',
+    positionValue: '$18,485.00',
+    pnl: '+6.4%',
+    pnlValue: '+$1,130.00',
+    lendingApy: '8.4%',
+    fundingRate: '0.004%',
+    perfExposure: '1.2x LONG',
+    liquidationBuffer: 85,
+    effectiveLeverage: '1.05x',
+    unrealizedPnl: '+$124.50',
+    splitRatio: '90/10',
+    splitPrincipal: 90,
+    accent: '#14F195',
+    insight:
+      'Capital is parked in blue-chip lending markets earning 8.2%. A small 1.5x SOL hedge offsets downside while keeping leverage near 1x.',
+    allocation: [
+      { name: 'STABLE_LENDING', value: 90, apy: '8.2%', exchanges: 'Solend • Marginfi' },
+      { name: 'SOL_PERPS_HEDGE', value: 10, lev: '1.5x', exchanges: 'Drift' },
+    ],
+    events: [
+      { label: 'COMPOUNDED_SOLEND_INTEREST', time: '2024-05-23 11:02:09', desc: 'Auto-compounded 8.2% APY lending interest.' },
+      { label: 'HEDGE_REBALANCED', time: '2024-05-22 22:18:44', desc: 'Trimmed SOL hedge to keep leverage ≈ 1.05x.' },
+      { label: 'WITHDRAWAL_BUFFER_TOPPED_UP', time: '2024-05-22 06:40:11', desc: 'Liquidity buffer raised to 12% for 7-day unlocks.' },
+      { label: 'DAILY_AUDIT_VERIFIED', time: '2024-05-22 00:05:23', desc: 'Principal protection confirmed at 98%.' },
+    ],
+  },
+  'btc-funding-alpha': {
+    name: 'BTC FUNDING ALPHA',
+    id: '0x-BTC-09',
+    status: 'ACTIVE',
+    description: 'Delta-neutral basis trading strategy capturing BTC funding rates',
+    nav: '$3,184.22',
+    navChange: '+0.08%',
+    position: '0.85 BTC',
+    positionValue: '$55,200.00',
+    pnl: '+18.2%',
+    pnlValue: '+$8,750.00',
+    lendingApy: '2.1%',
+    fundingRate: '0.025%',
+    perfExposure: 'NEUTRAL',
+    liquidationBuffer: 60,
+    effectiveLeverage: '2.4x',
+    unrealizedPnl: '+$450.21',
+    splitRatio: '50/50',
+    splitPrincipal: 50,
+    accent: '#F7931A',
+    insight:
+      'Delta-neutral basis trade: long spot, short perp. Net market exposure ≈ 0 while harvesting a +0.025%/hr funding spread.',
+    allocation: [
+      { name: 'STABLE_LENDING', value: 50, apy: '2.1%', exchanges: 'Kamino' },
+      { name: 'BTC_PERPS_NEUTRAL', value: 50, lev: '2.4x', exchanges: 'Drift • Zeta' },
+    ],
+    events: [
+      { label: 'FUNDING_HARVESTED', time: '2024-05-23 13:00:00', desc: 'Collected +0.025% funding on short perp leg.' },
+      { label: 'BASIS_REBALANCED', time: '2024-05-23 01:00:00', desc: 'Re-pegged spot/perp ratio to maintain delta ≈ 0.' },
+      { label: 'FUNDING_HARVESTED', time: '2024-05-22 13:00:00', desc: 'Collected +0.021% funding on short perp leg.' },
+      { label: 'DAILY_AUDIT_VERIFIED', time: '2024-05-22 00:05:23', desc: 'Delta-neutral invariant verified on-chain.' },
+    ],
+  }
 };
 
+function VaultLiveChart({ baseNav, accent = '#0049E6' }: { baseNav: number; accent?: string }) {
+  const [data, setData] = useState<{ time: number; nav: number }[]>([]);
+
+  useEffect(() => {
+    // Generate initial history points
+    const now = Date.now();
+    const history = [];
+    let currentNav = baseNav - 0.5; // Starts slightly lower
+    for (let i = 20; i >= 0; i--) {
+      history.push({
+        time: now - i * 3000,
+        nav: currentNav,
+      });
+      currentNav += (Math.random() - 0.4) * 0.05; 
+    }
+    setData(history);
+
+    const id = setInterval(() => {
+      setData((prev) => {
+        const last = prev[prev.length - 1];
+        const next = [...prev, {
+          time: Date.now(),
+          nav: last.nav + (Math.random() - 0.45) * 0.05,
+        }];
+        return next.length > 30 ? next.slice(1) : next;
+      });
+    }, 3000);
+
+    return () => clearInterval(id);
+  }, [baseNav]);
+
+  if (data.length === 0) return null;
+  const min = Math.min(...data.map(d => d.nav));
+  const max = Math.max(...data.map(d => d.nav));
+  const pad = (max - min) * 0.1;
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={accent} stopOpacity={0.3} />
+            <stop offset="100%" stopColor={accent} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <Area
+          type="monotone"
+          dataKey="nav"
+          stroke={accent}
+          strokeWidth={2}
+          fill="url(#chartGrad)"
+          isAnimationActive={false}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
+
 export default function VaultDashboard({ params }: { params: { id: string } }) {
-  const vault = vaultData['eth-momentum'] || vaultData['eth-momentum'];
+  const vault = vaultData[params.id] || vaultData['eth-momentum'];
   const [timeRange, setTimeRange] = useState('1d');
 
   return (
@@ -79,12 +220,18 @@ export default function VaultDashboard({ params }: { params: { id: string } }) {
               </div>
 
               <div className="flex gap-4">
-                <button className="px-6 py-2 bg-primary text-on-primary font-label-mono text-label-mono uppercase border border-primary hover:opacity-90 transition-opacity">
+                <Link
+                  href={`/deposit?vault=${params.id}`}
+                  className="px-6 py-2 bg-primary text-on-primary font-label-mono text-label-mono uppercase border border-primary hover:opacity-90 transition-opacity"
+                >
                   DEPOSIT
-                </button>
-                <button className="px-6 py-2 text-primary font-label-mono text-label-mono uppercase border border-primary hover:bg-primary hover:text-on-primary transition-colors">
+                </Link>
+                <Link
+                  href="/trade"
+                  className="px-6 py-2 text-primary font-label-mono text-label-mono uppercase border border-primary hover:bg-primary hover:text-on-primary transition-colors"
+                >
                   MANAGE
-                </button>
+                </Link>
               </div>
             </div>
           </section>
@@ -121,27 +268,11 @@ export default function VaultDashboard({ params }: { params: { id: string } }) {
                 </div>
 
                 <div className="relative h-64 w-full">
-                  <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 800 250">
-                    <defs>
-                      <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#0049E6" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#0049E6" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <line key={`h-${i}`} stroke="#1A1D1F" strokeWidth="1" x1="0" x2="800" y1={(i * 250) / 4} y2={(i * 250) / 4} />
-                    ))}
-                    <path
-                      d="M0,200 L50,180 L100,160 L150,140 L200,130 L250,110 L300,100 L350,90 L400,80 L450,70 L500,60 L550,55 L600,50 L650,45 L700,40 L750,35 L800,30"
-                      fill="none"
-                      stroke="#0049E6"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M0,200 L50,180 L100,160 L150,140 L200,130 L250,110 L300,100 L350,90 L400,80 L450,70 L500,60 L550,55 L600,50 L650,45 L700,40 L750,35 L800,30"
-                      fill="url(#chartGrad)"
-                    />
-                  </svg>
+                  <VaultLiveChart
+                    key={params.id}
+                    baseNav={Number(vault.nav.replace(/[^0-9.-]+/g, ''))}
+                    accent={vault.accent}
+                  />
                 </div>
 
                 <div className="mt-4 flex justify-between text-xs text-terminal-gray font-label-mono">
@@ -157,13 +288,18 @@ export default function VaultDashboard({ params }: { params: { id: string } }) {
 
               {/* Capital Split */}
               <div className="border border-grid-line bg-surface-container-lowest p-6">
-                <span className="font-label-mono text-label-mono text-on-surface-variant block mb-6">CAPITAL SPLIT: 80/20</span>
+                <span className="font-label-mono text-label-mono text-on-surface-variant block mb-6">CAPITAL SPLIT: {vault.splitRatio}</span>
 
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
                   {/* Pie Chart */}
-                  <div className="w-40 h-40 rounded-full border-8 border-vault-blue relative flex-shrink-0">
-                    <div className="absolute inset-0 rounded-full flex items-center justify-center">
-                      <span className="font-headline-lg text-headline-lg">100%</span>
+                  <div
+                    className="w-40 h-40 rounded-full relative flex-shrink-0"
+                    style={{
+                      background: `conic-gradient(${vault.accent} 0% ${vault.splitPrincipal}%, var(--surface-variant, #2A2D2F) ${vault.splitPrincipal}% 100%)`,
+                    }}
+                  >
+                    <div className="absolute inset-4 rounded-full bg-surface-container-lowest flex items-center justify-center">
+                      <span className="font-headline-lg text-headline-lg">{vault.splitPrincipal}%</span>
                     </div>
                   </div>
 
@@ -218,7 +354,7 @@ export default function VaultDashboard({ params }: { params: { id: string } }) {
                 <div className="border-t border-grid-line mt-4 pt-4 p-3 bg-surface-dim rounded flex gap-3">
                   <span className="text-secondary text-lg flex-shrink-0">⚡</span>
                   <p className="text-on-surface-variant text-sm font-body-md">
-                    Market showing bullish momentum. Vault maintaining long exposure with dynamic hedge for downside protection.
+                    {vault.insight}
                   </p>
                 </div>
               </div>
@@ -229,28 +365,7 @@ export default function VaultDashboard({ params }: { params: { id: string } }) {
               <div className="font-label-mono text-label-mono text-on-surface-variant">REBALANCE_EVENTS</div>
 
               <div className="flex flex-col gap-3 text-xs font-label-mono">
-                {[
-                  {
-                    label: 'REBALANCED_ETH-PERP_EXPOSURE',
-                    time: '2024-05-23 14:32:18',
-                    desc: 'Reduced exposure to 1.5x due to volatility threshold.',
-                  },
-                  {
-                    label: 'HARVESTED_LENDING_YIELD',
-                    time: '2024-05-23 09:15:42',
-                    desc: '$9.50 worth of rewards compounded into vault.',
-                  },
-                  {
-                    label: 'MOMENTUM_FLIP_TRIGGERED',
-                    time: '2024-05-22 18:47:56',
-                    desc: 'Signal strength 88/100. Increased long exposure.',
-                  },
-                  {
-                    label: 'DAILY_AUDIT_VERIFIED',
-                    time: '2024-05-22 00:05:23',
-                    desc: 'All offsets accounted for in multisig.',
-                  },
-                ].map((event, idx) => (
+                {vault.events.map((event: any, idx: number) => (
                   <div key={idx} className="p-3 border border-grid-line bg-surface-container-lowest">
                     <div className="text-primary font-semibold mb-1">• {event.label}</div>
                     <div className="text-terminal-gray mb-1">{event.time}</div>

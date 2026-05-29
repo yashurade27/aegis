@@ -8,11 +8,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMarketStore } from '@/lib/store/market-store';
 import { useSolanaContext } from '@/lib/solana/solana-context';
-import { DEFAULT_MARKET_SYMBOL } from '@/lib/solana/constants';
+import { DEFAULT_MARKET_SYMBOL, USE_ONCHAIN } from '@/lib/solana/constants';
 import { marketPda } from '@/lib/solana/pdas';
 import { decodeOrderType, decodeSide } from '@/lib/solana/anchor-utils';
 import { fromBaseUnits, fromPriceUnits } from '@/lib/solana/conversions';
 import { type Order, Side } from '@/lib/types';
+import { PublicKey } from '@solana/web3.js';
 
 const REFRESH_MS = 4000;
 
@@ -45,7 +46,7 @@ export function useOrderBook(address?: string) {
   const [bestBid, setBestBid] = useState(0);
   const [bestAsk, setBestAsk] = useState(0);
 
-  const useOnchain = Boolean(solana?.program && solana.wallet?.publicKey);
+  const useOnchain = USE_ONCHAIN && Boolean(solana?.program && solana.wallet?.publicKey);
 
   useEffect(() => {
     if (!useOnchain || !solana?.program) {
@@ -76,6 +77,7 @@ export function useOrderBook(address?: string) {
 
     const fetchOrders = async () => {
       try {
+        if (!solana.program) return;
         const [marketKey] = marketPda(DEFAULT_MARKET_SYMBOL);
         const orders = await solana.program.account.order.all([
           {
@@ -89,7 +91,7 @@ export function useOrderBook(address?: string) {
         if (!active) return;
 
         const mapped: Order[] = orders
-          .map(({ account }) => {
+          .map(({ account, publicKey }: { account: any, publicKey: PublicKey }) => {
             const side = decodeSide(account.side);
             const orderType = decodeOrderType(
               getAccountField(account as Record<string, unknown>, ['orderType', 'order_type'])

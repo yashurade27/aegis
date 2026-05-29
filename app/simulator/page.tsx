@@ -4,6 +4,16 @@ import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from 'recharts';
+import {
   requiredInitialMargin,
   liquidationPrice,
   marginHealth,
@@ -70,6 +80,32 @@ export default function Simulator() {
     () => computeFundingRate(price * (1 + funding / 10000), price),
     [price, funding]
   );
+
+  // ── Projected equity curve ───────────────────────────────────────────────
+  // Interpolate the price from entry → projected over the time horizon and
+  // value the (leveraged) position at each step using the real engine PnL.
+  const equityCurve = useMemo(() => {
+    const STEPS = 48;
+    const leveragedSize = (depositAmount * leverage) / price;
+    const points: { day: number; equity: number; price: number; pnl: number }[] = [];
+    for (let i = 0; i <= STEPS; i += 1) {
+      const t = i / STEPS;
+      const stepPrice = price + (projectedMarkPrice - price) * t;
+      const stepPosition = { ...mockPosition, size: leveragedSize, entryPrice: price };
+      const pnl = calculateUnrealizedPnl(stepPosition, stepPrice);
+      points.push({
+        day: Math.round(t * duration),
+        equity: Math.max(0, depositAmount + pnl),
+        price: stepPrice,
+        pnl,
+      });
+    }
+    return points;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [depositAmount, leverage, price, projectedMarkPrice, duration, side]);
+
+  const finalPnl = equityCurve[equityCurve.length - 1]?.pnl ?? 0;
+  const curveColor = finalPnl >= 0 ? '#00FF41' : '#EF4444';
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -243,34 +279,62 @@ export default function Simulator() {
                   </div>
                 </div>
 
-                <div className="flex-grow relative mt-4">
-                  <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 400">
-                    {/* Grid lines */}
-                    {[100, 200, 300].map(y => (
-                      <line key={y} stroke="#1A1D1F" strokeWidth="1" x1="0" x2="1000" y1={y} y2={y} />
-                    ))}
-                    {/* Liquidation line */}
-                    <line stroke="#EF4444" strokeWidth="1" strokeDasharray="5,5" x1="0" x2="1000" y1="350" y2="350" />
-                    <text fill="#EF4444" fontFamily="JetBrains Mono" fontSize="10" x="10" y="345">LIQ: ${liqPrice.toFixed(2)}</text>
-
-                    {/* Projected curve */}
-                    {estimatedProfit >= 0 ? (
-                      <path d="M0,350 Q250,300 500,200 T1000,50" fill="none" stroke="#0049E6" strokeWidth="2" opacity="0.8" />
-                    ) : (
-                      <path d="M0,50 Q250,150 500,250 T1000,380" fill="none" stroke="#EF4444" strokeWidth="2" opacity="0.8" />
-                    )}
-
-                    {/* Entry point */}
-                    <circle cx="0" cy={estimatedProfit >= 0 ? 350 : 50} fill="white" r="4" />
-                    <text fill="white" fontFamily="JetBrains Mono" fontSize="12" x="10" y={estimatedProfit >= 0 ? 345 : 65}>
-                      ENTRY: ${price.toFixed(2)}
-                    </text>
-                    {/* Exit point */}
-                    <circle cx="1000" cy={estimatedProfit >= 0 ? 50 : 380} fill="#00FF41" r="4" />
-                    <text fill="#00FF41" fontFamily="JetBrains Mono" fontSize="12" x="850" y={estimatedProfit >= 0 ? 45 : 375}>
-                      ${projectedMarkPrice.toFixed(2)}
-                    </text>
-                  </svg>
+                <div className="flex-grow relative mt-4 min-h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={equityCurve} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={curveColor} stopOpacity={0.25} />
+                          <stop offset="100%" stopColor={curveColor} stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                      <XAxis
+                        dataKey="day"
+                        tick={{ fill: '#6B6B6B', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+                        axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
+                        tickLine={false}
+                        tickFormatter={(v: number) => `${v}d`}
+                        minTickGap={40}
+                      />
+                      <YAxis
+                        tick={{ fill: '#6B6B6B', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+                        axisLine={false}
+                        tickLine={false}
+                        width={72}
+                        tickFormatter={(v: number) => `$${(v / 1000).toFixed(1)}k`}
+                        domain={['auto', 'auto']}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          background: '#0D0D0D',
+                          border: '1px solid #1A1D1F',
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: 12,
+                        }}
+                        labelFormatter={(v) => `Day ${v}`}
+                        formatter={(value: number, name: string) => {
+                          if (name === 'equity') return [`$${value.toLocaleString('en-US', { maximumFractionDigits: 0 })}`, 'EQUITY'];
+                          return [value, name];
+                        }}
+                      />
+                      <ReferenceLine
+                        y={depositAmount}
+                        stroke="rgba(255,255,255,0.25)"
+                        strokeDasharray="4 4"
+                        label={{ value: `BREAK-EVEN $${depositAmount.toLocaleString()}`, fill: '#6B6B6B', fontSize: 10, position: 'insideTopRight' }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="equity"
+                        stroke={curveColor}
+                        strokeWidth={2}
+                        fill="url(#equityGrad)"
+                        isAnimationActive={false}
+                        dot={false}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
 
                 <div className="mt-4 flex justify-between items-center border-t border-grid-line pt-4 font-label-mono text-xs text-terminal-gray">

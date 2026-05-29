@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMarketStore } from '@/lib/store/market-store';
 import { computeFundingRate } from '@/engine/pkg/engine';
 import { useSolanaContext } from '@/lib/solana/solana-context';
-import { DEFAULT_MARKET_SYMBOL } from '@/lib/solana/constants';
+import { DEFAULT_MARKET_SYMBOL, USE_ONCHAIN } from '@/lib/solana/constants';
 import { marketPda } from '@/lib/solana/pdas';
 import { fromBaseUnits, fromPriceUnits } from '@/lib/solana/conversions';
 import { type Market } from '@/lib/types';
@@ -24,7 +24,7 @@ export function useMarket(address?: string) {
   const [onchainError, setOnchainError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const useOnchain = Boolean(solana?.program && solana.wallet?.publicKey);
+  const useOnchain = USE_ONCHAIN && Boolean(solana?.program && solana.wallet?.publicKey);
 
   useEffect(() => {
     if (!useOnchain || !solana?.program) {
@@ -39,6 +39,7 @@ export function useMarket(address?: string) {
     const fetchMarket = async () => {
       setLoading(true);
       try {
+        if (!solana.program) return;
         const [marketKey] = marketPda(DEFAULT_MARKET_SYMBOL);
         const account = await solana.program.account.market.fetchNullable(marketKey);
         if (!active) return;
