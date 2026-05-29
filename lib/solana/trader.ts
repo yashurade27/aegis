@@ -1,12 +1,13 @@
 import { SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import type { Program } from '@coral-xyz/anchor';
+import type { Solperps } from '@/solperps/target/types/solperps';
 import type { PublicKey } from '@solana/web3.js';
 import { DEFAULT_USDC_MINT } from './constants';
 import { exchangePda, traderPda, traderVaultPda } from './pdas';
 
 export async function ensureTraderAccount(params: {
-  program: Program;
+  program: Program<Solperps>;
   owner: PublicKey;
   usdcMint?: PublicKey;
 }) {
@@ -22,6 +23,7 @@ export async function ensureTraderAccount(params: {
 
   await program.methods
     .initializeTrader()
+    // @ts-ignore: Anchor automatically resolves some PDAs but we explicitly pass them
     .accounts({
       owner,
       exchange,
@@ -31,7 +33,7 @@ export async function ensureTraderAccount(params: {
       systemProgram: SystemProgram.programId,
       tokenProgram: TOKEN_PROGRAM_ID,
       rent: SYSVAR_RENT_PUBKEY,
-    })
+    } as any)
     .rpc();
 
   return { exchange, traderAccount, traderVault };

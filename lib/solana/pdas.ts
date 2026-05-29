@@ -1,7 +1,7 @@
 import { PublicKey } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
 import { SOLPERPS_PROGRAM_ID } from './constants';
-import { Side } from '@/lib/types';
+import { Side } from '../types';
 
 const seed = (value: string) => Buffer.from(value);
 
@@ -36,6 +36,13 @@ export function positionPda(owner: PublicKey, market: PublicKey, side: Side) {
 export function orderPda(market: PublicKey, orderId: BN) {
   return PublicKey.findProgramAddressSync(
     [seed('order'), market.toBuffer(), orderId.toArrayLike(Buffer, 'le', 8)],
+    SOLPERPS_PROGRAM_ID
+  );
+}
+
+export function oraclePda(market: PublicKey) {
+  return PublicKey.findProgramAddressSync(
+    [seed('oracle'), market.toBuffer()],
     SOLPERPS_PROGRAM_ID
   );
 }

@@ -8,6 +8,7 @@ import {
   PositionTable,
   MarginHealthMeter,
   FundingRateBar,
+  PriceChart,
 } from '@/components/trading';
 import { useTraderAccount } from '@/hooks/use-trader-account';
 import { useMarket } from '@/hooks/use-market';
@@ -62,34 +63,37 @@ export default function TradePage() {
               <OrderBook className="h-[480px]" />
             </aside>
 
-            {/* Order form + risk widgets */}
-            <section className="w-full lg:w-[360px] border-r border-grid-line p-margin-md flex flex-col gap-4">
-              <PlaceOrderForm />
-              <MarginHealthMeter healthBps={healthBps} healthPct={healthPct} />
-            </section>
-
-            {/* Funding + market info */}
-            <section className="flex-grow p-margin-md flex flex-col gap-4">
+            {/* Price chart — centrepiece */}
+            <section className="flex-grow border-r border-grid-line p-margin-md flex flex-col gap-4">
+              <PriceChart />
               <FundingRateBar />
-              <div className="flex-grow border border-grid-line bg-surface-container-lowest p-4 font-label-mono text-xs text-terminal-gray flex flex-col gap-2">
+              <div className="border border-grid-line bg-surface-container-lowest p-4 font-label-mono text-xs text-terminal-gray flex flex-col gap-2">
                 <span className="text-on-surface-variant uppercase">[ MARKET_INFO ]</span>
-                <div className="flex justify-between">
-                  <span>Funding Rate</span>
-                  <span className="text-on-surface">{(fundingRate / 100).toFixed(4)} bps/hr</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Maintenance Margin</span>
-                  <span className="text-on-surface">5.00%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Taker Fee</span>
-                  <span className="text-on-surface">0.10%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Max Leverage</span>
-                  <span className="text-on-surface">10x</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <span>Funding Rate</span>
+                    <span className="text-on-surface">{(fundingRate / 100).toFixed(4)} bps/hr</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span>Maint. Margin</span>
+                    <span className="text-on-surface">5.00%</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span>Taker Fee</span>
+                    <span className="text-on-surface">0.10%</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span>Max Leverage</span>
+                    <span className="text-on-surface">10x</span>
+                  </div>
                 </div>
               </div>
+            </section>
+
+            {/* Order form + risk widgets */}
+            <section className="w-full lg:w-[360px] p-margin-md flex flex-col gap-4">
+              <PlaceOrderForm />
+              <MarginHealthMeter healthBps={healthBps} healthPct={healthPct} />
             </section>
           </div>
 
@@ -103,3 +107,4 @@ export default function TradePage() {
     </div>
   );
 }
+

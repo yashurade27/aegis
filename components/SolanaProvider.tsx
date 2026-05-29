@@ -18,6 +18,7 @@ import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { AnchorProvider, Program, type Idl } from '@coral-xyz/anchor';
 import idl from '@/solperps/target/idl/solperps.json';
 import { SolanaContext } from '@/lib/solana/solana-context';
+import type { Solperps } from '@/solperps/target/types/solperps';
 import { SOLPERPS_PROGRAM_ID } from '@/lib/solana/constants';
 
 function InnerSolanaProvider({
@@ -40,7 +41,7 @@ function InnerSolanaProvider({
 
   const program = useMemo(() => {
     if (!provider) return null;
-    return new Program(idl as Idl, provider);
+    return new Program(idl as any, provider) as unknown as Program<Solperps>;
   }, [provider]);
 
   const value = useMemo(
