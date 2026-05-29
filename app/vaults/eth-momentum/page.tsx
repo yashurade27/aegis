@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -47,12 +48,18 @@ export default function EthMomentumPage() {
               </div>
             </div>
             <div className="flex gap-4">
-              <button className="px-6 py-2 bg-primary text-on-primary font-label-mono text-label-mono uppercase border border-primary hover:opacity-90 transition-opacity">
+              <Link
+                href="/trade"
+                className="px-6 py-2 bg-primary text-on-primary font-label-mono text-label-mono uppercase border border-primary hover:opacity-90 transition-opacity"
+              >
                 TRADE
-              </button>
-              <button className="px-6 py-2 text-primary font-label-mono text-label-mono uppercase border border-primary hover:bg-primary hover:text-on-primary transition-colors">
+              </Link>
+              <Link
+                href="/vault/eth-momentum"
+                className="px-6 py-2 text-primary font-label-mono text-label-mono uppercase border border-primary hover:bg-primary hover:text-on-primary transition-colors"
+              >
                 MANAGE
-              </button>
+              </Link>
             </div>
           </section>
 

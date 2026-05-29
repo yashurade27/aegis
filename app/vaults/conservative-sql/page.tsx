@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 
@@ -41,12 +42,18 @@ export default function ConservativeSQLPage() {
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button className="py-4 border border-primary text-primary font-label-mono text-label-mono uppercase hover:bg-primary hover:text-on-primary transition-all">
+                <Link
+                  href="/deposit?vault=conservative-sql"
+                  className="py-4 border border-primary text-primary font-label-mono text-label-mono uppercase hover:bg-primary hover:text-on-primary transition-all text-center"
+                >
                   DEPOSIT
-                </button>
-                <button className="py-4 border border-primary text-primary font-label-mono text-label-mono uppercase hover:bg-primary hover:text-on-primary transition-all">
-                  VIEW DETAILS
-                </button>
+                </Link>
+                <Link
+                  href="/vault/conservative-sql"
+                  className="py-4 border border-primary text-primary font-label-mono text-label-mono uppercase hover:bg-primary hover:text-on-primary transition-all text-center"
+                >
+                  MANAGE
+                </Link>
               </div>
             </div>
           </div>
