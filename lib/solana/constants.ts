@@ -13,7 +13,7 @@ export const DEFAULT_MARKET_SYMBOL =
 // UI into on-chain mode (otherwise the market, order book and positions all read
 // back empty). Set NEXT_PUBLIC_USE_ONCHAIN=true once devnet has been set up via
 // `npm run keepers:setup`.
-export const USE_ONCHAIN = process.env.NEXT_PUBLIC_USE_ONCHAIN === 'true';
+export const USE_ONCHAIN = process.env.NEXT_PUBLIC_USE_ONCHAIN === 'false';
 
 export const DEFAULT_USDC_MINT = new PublicKey(
   process.env.NEXT_PUBLIC_USDC_MINT ??
