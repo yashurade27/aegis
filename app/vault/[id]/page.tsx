@@ -38,10 +38,10 @@ const vaultData: Record<string, any> = {
       { name: 'ETH_PERPS_MOMENTUM', value: 20, lev: '3.3x', exchanges: 'Drift • Zeta' },
     ],
     events: [
-      { label: 'REBALANCED_ETH-PERP_EXPOSURE', time: '2024-05-23 14:32:18', desc: 'Reduced exposure to 1.5x due to volatility threshold.' },
-      { label: 'MOMENTUM_FLIP_TRIGGERED', time: '2024-05-22 18:47:56', desc: 'Signal strength 88/100. Increased long exposure.' },
-      { label: 'HARVESTED_LENDING_YIELD', time: '2024-05-22 09:15:42', desc: '$9.50 of rewards compounded into vault.' },
-      { label: 'DAILY_AUDIT_VERIFIED', time: '2024-05-22 00:05:23', desc: 'All offsets accounted for in multisig.' },
+      { label: 'REBALANCED_ETH-PERP_EXPOSURE', time: '2026-05-23 14:32:18', desc: 'Reduced exposure to 1.5x due to volatility threshold.' },
+      { label: 'MOMENTUM_FLIP_TRIGGERED', time: '2026-05-22 18:47:56', desc: 'Signal strength 88/100. Increased long exposure.' },
+      { label: 'HARVESTED_LENDING_YIELD', time: '2026-05-22 09:15:42', desc: '$9.50 of rewards compounded into vault.' },
+      { label: 'DAILY_AUDIT_VERIFIED', time: '2026-05-22 00:05:23', desc: 'All offsets accounted for in multisig.' },
     ],
   },
   'conservative-sql': {
@@ -71,10 +71,10 @@ const vaultData: Record<string, any> = {
       { name: 'SOL_PERPS_HEDGE', value: 10, lev: '1.5x', exchanges: 'Drift' },
     ],
     events: [
-      { label: 'COMPOUNDED_SOLEND_INTEREST', time: '2024-05-23 11:02:09', desc: 'Auto-compounded 8.2% APY lending interest.' },
-      { label: 'HEDGE_REBALANCED', time: '2024-05-22 22:18:44', desc: 'Trimmed SOL hedge to keep leverage ≈ 1.05x.' },
-      { label: 'WITHDRAWAL_BUFFER_TOPPED_UP', time: '2024-05-22 06:40:11', desc: 'Liquidity buffer raised to 12% for 7-day unlocks.' },
-      { label: 'DAILY_AUDIT_VERIFIED', time: '2024-05-22 00:05:23', desc: 'Principal protection confirmed at 98%.' },
+      { label: 'COMPOUNDED_SOLEND_INTEREST', time: '2026-05-23 11:02:09', desc: 'Auto-compounded 8.2% APY lending interest.' },
+      { label: 'HEDGE_REBALANCED', time: '2026-05-22 22:18:44', desc: 'Trimmed SOL hedge to keep leverage ≈ 1.05x.' },
+      { label: 'WITHDRAWAL_BUFFER_TOPPED_UP', time: '2026-05-22 06:40:11', desc: 'Liquidity buffer raised to 12% for 7-day unlocks.' },
+      { label: 'DAILY_AUDIT_VERIFIED', time: '2026-05-22 00:05:23', desc: 'Principal protection confirmed at 98%.' },
     ],
   },
   'btc-funding-alpha': {
@@ -104,10 +104,10 @@ const vaultData: Record<string, any> = {
       { name: 'BTC_PERPS_NEUTRAL', value: 50, lev: '2.4x', exchanges: 'Drift • Zeta' },
     ],
     events: [
-      { label: 'FUNDING_HARVESTED', time: '2024-05-23 13:00:00', desc: 'Collected +0.025% funding on short perp leg.' },
-      { label: 'BASIS_REBALANCED', time: '2024-05-23 01:00:00', desc: 'Re-pegged spot/perp ratio to maintain delta ≈ 0.' },
-      { label: 'FUNDING_HARVESTED', time: '2024-05-22 13:00:00', desc: 'Collected +0.021% funding on short perp leg.' },
-      { label: 'DAILY_AUDIT_VERIFIED', time: '2024-05-22 00:05:23', desc: 'Delta-neutral invariant verified on-chain.' },
+      { label: 'FUNDING_HARVESTED', time: '2026-05-23 13:00:00', desc: 'Collected +0.025% funding on short perp leg.' },
+      { label: 'BASIS_REBALANCED', time: '2026-05-23 01:00:00', desc: 'Re-pegged spot/perp ratio to maintain delta ≈ 0.' },
+      { label: 'FUNDING_HARVESTED', time: '2026-05-22 13:00:00', desc: 'Collected +0.021% funding on short perp leg.' },
+      { label: 'DAILY_AUDIT_VERIFIED', time: '2026-05-22 00:05:23', desc: 'Delta-neutral invariant verified on-chain.' },
     ],
   }
 };

@@ -23,7 +23,7 @@ export function Footer() {
           </a>
         </div>
         <div className="text-on-surface-variant font-label-mono text-label-mono uppercase text-center md:text-right text-xs">
-          © 2024 AEGIS VAULT. INSTITUTIONAL GRADE SECURITY.
+          © 2026 AEGIS VAULT. INSTITUTIONAL GRADE SECURITY.
         </div>
       </div>
     </footer>

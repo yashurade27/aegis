@@ -235,7 +235,7 @@ export default function DepositFlow() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-on-surface-variant">Unlock Date</span>
-                        <span className="font-label-mono">June 1, 2024</span>
+                        <span className="font-label-mono">June 1, 2026</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-on-surface-variant">Vault Shares</span>
