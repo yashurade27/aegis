@@ -1,3 +1,8 @@
+
+# **[Live demo — aegisvault.netlify.app](https://aegisvault.netlify.app)**
+# **[Video walkthrough](https://drive.google.com/file/d/1grsut2MV9VZfZMmJXOB-6hYC99EDSaeZ/view?usp=sharing)**
+# **[Architecture diagram — ARCHITECTURE.md](ARCHITECTURE.md)**
+
 # Aegis — SolPerps Vault
 
 Aegis is a hybrid on-chain / off-chain perpetuals vault and trading UI. The repository contains:
@@ -12,6 +17,9 @@ This README explains architecture, developer setup, testing, and deployment end-
 - Local dev (WASM engine + frontend): `npm install` → `npm run dev` (see Requirements)
 - Run on-chain locally: install Anchor + Solana CLI → `cd solperps` → `npm install` → `anchor build` → `anchor test` / `anchor localnet` flow
 - Deploy to devnet: `anchor deploy --provider.cluster devnet` then run `npm run keepers:setup` and set `NEXT_PUBLIC_USE_ONCHAIN=true`
+
+- Live demo: [https://aegisvault.netlify.app](https://aegisvault.netlify.app)
+- Video walkthrough: [Explanation / walkthrough](https://drive.google.com/file/d/1grsut2MV9VZfZMmJXOB-6hYC99EDSaeZ/view?usp=sharing)
 
 **Contents**
 - Project overview
