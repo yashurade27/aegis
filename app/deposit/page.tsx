@@ -1,25 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 
 export default function DepositFlow() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [depositAmount, setDepositAmount] = useState(1000);
   const [lockDays, setLockDays] = useState(7);
 
-  const lockOptions: Record<number, { apy: number }> = {
-    7: { apy: 18.5 },
-    14: { apy: 21.25 },
-    30: { apy: 24.5 },
-  };
-  const selectedApy = lockOptions[lockDays]?.apy ?? lockOptions[7].apy;
-  const projectedReturn = depositAmount * (selectedApy / 100);
-  const projectedNav = depositAmount + projectedReturn;
+  const projectedReturn = depositAmount * 0.185;
   const shares = depositAmount / 1.2847;
   const vaultId = searchParams.get('vault') ?? 'eth-momentum';
 
@@ -152,7 +145,7 @@ export default function DepositFlow() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1">
                         <span className="text-terminal-gray text-xs font-label-mono">YEAR_1_APY</span>
-                          <span className="font-headline-lg text-headline-lg">{selectedApy}%</span>
+                        <span className="font-headline-lg text-headline-lg">18.5%</span>
                       </div>
                       <div className="flex flex-col gap-1">
                         <span className="text-terminal-gray text-xs font-label-mono">ESTIMATED_RETURN</span>
@@ -160,7 +153,7 @@ export default function DepositFlow() {
                       </div>
                       <div className="flex flex-col gap-1">
                         <span className="text-terminal-gray text-xs font-label-mono">PROJECTED_NAV</span>
-                        <span className="font-headline-lg text-headline-lg">${projectedNav.toFixed(2)}</span>
+                        <span className="font-headline-lg text-headline-lg">${(depositAmount + projectedReturn).toFixed(2)}</span>
                       </div>
                       <div className="flex flex-col gap-1">
                         <span className="text-terminal-gray text-xs font-label-mono">UNLOCK_DATE</span>
@@ -256,12 +249,13 @@ export default function DepositFlow() {
                   </div>
 
                   <div className="mt-auto flex gap-4">
-                    <Link
-                      href={`/vault/${vaultId}`}
-                      className="flex-1 py-3 bg-primary text-on-primary font-label-mono text-label-mono uppercase border border-primary hover:opacity-90 transition-opacity text-center"
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/vault/${vaultId}`)}
+                      className="flex-1 py-3 bg-primary text-on-primary font-label-mono text-label-mono uppercase border border-primary hover:opacity-90 transition-opacity"
                     >
                       VIEW DASHBOARD
-                    </Link>
+                    </button>
                   </div>
                 </>
               )}
@@ -284,7 +278,7 @@ export default function DepositFlow() {
 
                 <div className="flex justify-between items-center">
                   <span className="text-on-surface-variant text-sm">Projected APY</span>
-                  <span className="font-label-mono font-semibold text-vault-blue">{selectedApy}%</span>
+                  <span className="font-label-mono font-semibold text-vault-blue">18.5%</span>
                 </div>
 
                 <div className="flex justify-between items-center border-t border-grid-line pt-4">
@@ -294,7 +288,7 @@ export default function DepositFlow() {
 
                 <div className="flex justify-between items-center">
                   <span className="text-on-surface-variant text-sm">Total NAV (Year 1)</span>
-                  <span className="font-headline-lg text-headline-lg">${projectedNav.toFixed(2)}</span>
+                  <span className="font-headline-lg text-headline-lg">${(depositAmount + projectedReturn).toFixed(2)}</span>
                 </div>
               </div>
 
